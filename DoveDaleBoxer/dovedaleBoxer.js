@@ -286,7 +286,7 @@ const processPlayerData = (data = null) => {
 }
 
 const updateBoxList = (data = null) => {
-	console.log("==BOX LIST==")
+	// console.log("==BOX LIST==")
 	const playersArray = processPlayerData(data);
 
 	const selectedValue = elements.serverSelect.value;
@@ -303,7 +303,7 @@ const updateBoxList = (data = null) => {
 				(player.position.x - x) ** 2 + (player.position.y - y) ** 2
 			);
 			if (distance < rad) {
-				console.log(`Player ${player.username} is in box ${name}`);
+				// console.log(`Player ${player.username} is in box ${name}`);
 				occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] =player.username;
 
 			}
@@ -312,7 +312,7 @@ const updateBoxList = (data = null) => {
 	let html = `<tr><td>Box</td><td>Status</td><td>Player</td></tr>`;
 	Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
 		html += `<tr><td>[${box}] ${name}</td><td>${occupiedBoxes[box] ? "✓" : "X"}</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td></tr>`;
-		elements.map.getElementById(box)?.setAttribute("fill", occupiedBoxes[box] ? "green" : "red");
+		elements.map.getElementById(box)?.setAttribute("fill", occupiedBoxes[box] ? "forestgreen" : "red");
 	});
 	elements.boxList.innerHTML = html;
 
