@@ -277,26 +277,32 @@ const updateBoxList = (data = null) => {
 	const selectedValue = elements.serverSelect.value;
 
 	if (selectedValue == "default") {
-		return;
+		Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
+			elements.map.getElementById(box)?.setAttribute("fill", "white");
+		});
 	}
 
 	let occupiedBoxes = new Set();
 
-	state.serverData[selectedValue].players.forEach((player) => {
-		Object.entries(SIGNAL_BOXES).forEach(([box, { name, x, y, rad }]) => {
-			const distance = Math.sqrt(
-				(player.position.x - x) ** 2 + (player.position.y - y) ** 2
-			);
-			if (distance < rad) {
-				// console.log(`Player ${player.username} is in box ${name}`);
-				occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] = player.username;
+	if (selectedValue != "default") {
+		state.serverData[selectedValue].players.forEach((player) => {
+			Object.entries(SIGNAL_BOXES).forEach(([box, { name, x, y, rad }]) => {
+				const distance = Math.sqrt(
+					(player.position.x - x) ** 2 + (player.position.y - y) ** 2
+				);
+				if (distance < rad) {
+					// console.log(`Player ${player.username} is in box ${name}`);
+					occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] = player.username;
 
-			}
+				}
+			});
 		});
-	});
-	let html = `<tr><td>Box</td><td>Status</td><td>Player</td></tr>`;
+	}
+
+	let html = `<tr><td style="width:40%">Box</td><td>Status</td><td style="width:50%">Player</td></tr>`;
 	Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
 		html += `<tr><td>[${box}] ${name}</td><td>${occupiedBoxes[box] ? "✓" : "X"}</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td></tr>`;
+
 		elements.map.getElementById(box)?.setAttribute("fill", occupiedBoxes[box] ? "forestgreen" : "red");
 	});
 	elements.boxList.innerHTML = html;
