@@ -55,11 +55,16 @@
 </head>
 
 <body>
-    <p style="text-align: right;"><small>updated 3/29/26; Dovedale 2.0.1h8</small></p>
+    <p style="text-align: right;">
+            <svg width = 20px xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 2">
+                <ellipse id = "connectionStatus" cx="1" cy="1" rx="0.8" ry="0.8" fill="red" stroke="white" stroke-width="0.4" />
+            </svg>
+        <small>updated 3/29/26; Dovedale 2.0.1h8</small>
+    </p>
     <div>
         <select id="servers"></select>
     </div>
-    <!--BEGIN MAP SVG-->
+    <!--BEGIN MAP SVG. SVG  embedded because we have to mess with the DOM-->
     <svg id="map" xmlns="http://www.w3.org/2000/svg" class="metro-map" viewBox="-18,-3,23,9"
         xmlns:bx="https://boxy-svg.com">
         <g stroke-linejoin="round" stroke-width="0.3" />
@@ -314,11 +319,6 @@
             </tr>
         </table>
     </div>
-
-    <h3>hello!</h3>
-    <P>This site shows which signal boxes are currently staffed on the Dovedale raileway systemm; it should show at a
-        glance where drivers can go, and it updates LIVE. This website uses player locations reported by the server, and checks if any players are in proximity to a
-        signal box. It does not check if the box is claimed, so this method is not perfect.</P>
 
     <script src="dovedaleBoxer.js"></script>
 </body>

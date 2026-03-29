@@ -93,7 +93,8 @@ const STALE_SERVER_TIMEOUT = 30_000;
 const elements = {
 	serverSelect: document.getElementById("servers"),
 	boxList: document.getElementById("boxList"),
-	map: document.getElementById("map")
+	map: document.getElementById("map"),
+	connectionStatus: document.getElementById("connectionStatus")
 };
 
 class AppState {
@@ -171,6 +172,7 @@ const createWebSocket = () => {
 	state.ws = new WebSocket(WS_SERVER);
 	state.ws.addEventListener("open", () => {
 		console.log("WebSocket connected");
+		elements.connectionStatus.setAttribute("fill", "yellow"); // connection established, don't turn green till we get data.
 		state.reconnectAttempts = 0;
 		// hideConnectionPopup();
 		startStaleServerCleanup();
@@ -193,6 +195,13 @@ const createWebSocket = () => {
 			updateServerList(data);
 
 			updateBoxList(data);
+
+			// each time we get data, do a blip!
+			elements.connectionStatus.setAttribute("fill", "lightGreen");
+			setTimeout(() => {
+				elements.connectionStatus.setAttribute("fill", "forestgreen");
+			}, 100);
+
 			// drawScene();
 		} catch (err) {
 			console.error("Error parsing data", err);
@@ -205,7 +214,8 @@ const createWebSocket = () => {
 
 	state.ws.addEventListener("close", (event) => {
 		console.warn("WebSocket closed:", event.code, event.reason);
-		showConnectionPopup();
+		// showConnectionPopup();
+		connectionStatus.setAttribute("fill", "red");
 		stopStaleServerCleanup();
 
 		if (
@@ -229,20 +239,20 @@ const attemptReconnect = () => {
 	}
 
 	if (state.reconnectAttempts >= state.maxReconnectAttempts) {
-		updateReconnectButton();
+		// updateReconnectButton();
 		return;
 	}
 
 	state.reconnectAttempts++;
 
-	elements.reconnectBtn.disabled = true;
-	elements.reconnectBtn.classList.add("bg-zinc-600");
-	elements.reconnectBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+	// elements.reconnectBtn.disabled = true;
+	// elements.reconnectBtn.classList.add("bg-zinc-600");
+	// elements.reconnectBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
 
-	elements.reconnectBtn.innerHTML = `
-		<i id="reconnectIcon" class="material-symbols-outlined text-4 animate-spin">refresh</i>
-		Connecting...
-	`;
+	// elements.reconnectBtn.innerHTML = `
+	// 	<i id="reconnectIcon" class="material-symbols-outlined text-4 animate-spin">refresh</i>
+	// 	Connecting...
+	// `;
 
 	if (state.ws && state.ws.readyState !== WebSocket.CLOSED) {
 		state.ws.close();
@@ -260,34 +270,9 @@ const resetReconnection = () => {
 	}
 };
 
-const processPlayerData = (data = null) => {
-	if (data?.players) {
-		const playersArray = Array.isArray(data.players) ? data.players : [];
-
-		playersArray.forEach((player) => {
-			if (!player.trainData || !Array.isArray(player.trainData)) return;
-			const trainData = player.trainData;
-
-			if (typeof trainData !== "object" || trainData === null) {
-				player.trainData = null;
-				return;
-			}
-
-			player.trainData = [
-				trainData.destination || "Unknown",
-				trainData.class || "Unknown",
-				trainData.headcode || "----",
-				trainData.headcodeClass || "",
-			];
-		});
-		return playersArray;
-	}
-
-}
-
 const updateBoxList = (data = null) => {
 	// console.log("==BOX LIST==")
-	const playersArray = processPlayerData(data);
+	// const playersArray = processPlayerData(data);
 
 	const selectedValue = elements.serverSelect.value;
 
@@ -304,7 +289,7 @@ const updateBoxList = (data = null) => {
 			);
 			if (distance < rad) {
 				// console.log(`Player ${player.username} is in box ${name}`);
-				occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] =player.username;
+				occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] = player.username;
 
 			}
 		});
@@ -316,9 +301,9 @@ const updateBoxList = (data = null) => {
 	});
 	elements.boxList.innerHTML = html;
 
-	
 
-}
+
+};
 
 const updateServerList = (data = null) => {
 	const currentServers = Object.keys(state.serverData);
@@ -326,7 +311,7 @@ const updateServerList = (data = null) => {
 		.slice(1)
 		.map((opt) => opt.value);
 
-	const playersArray = processPlayerData(data);
+	// const playersArray = processPlayerData(data);
 
 	// this will constantly recreate the options which can
 	//  make selecting an option difficult on certain browsers
