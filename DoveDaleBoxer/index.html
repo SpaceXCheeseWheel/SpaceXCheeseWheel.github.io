@@ -4,6 +4,41 @@
 <head>
     <meta charset="UTF-8" />
     <title>Dovedale Boxer</title>
+    <style>
+        html {
+            
+            background-color: rgb(7, 9, 13);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid white;
+            border-collapse: collapse;
+            background-color: rgb(23, 28, 38);
+        }
+
+        table {
+            margin: 5px;
+            color: white;
+            background-color: rgb(23, 28, 38);
+            width: 100%;
+            max-width: 1080px;
+        }
+
+        #servers {
+            margin: 5px;
+        }
+
+        #map {
+            
+            background-color: rgb(23, 28, 38);
+            width: 100%;
+            max-width: 1080px;
+
+        }
+    </style>
 
 </head>
 
@@ -12,18 +47,262 @@
     <div>
         <select id="servers"></select>
     </div>
-    <table id="boxList">
-        <tr>
-            <td>MC</td>
-            <td>CC</td>
-            <td>GJ</td>
-            <td>MS</td>
-        </tr>
-        <tr>
-            <td>blablabla</td>
-        </tr>
-    </table>
+    <!--BEGIN MAP SVG-->
+    <svg id="map" xmlns="http://www.w3.org/2000/svg" class="metro-map" viewBox="-18,-3,23,9"
+        xmlns:bx="https://boxy-svg.com">
+        <g stroke-linejoin="round" stroke-width="0.3" />
+        <g />
+        <g fill="none" stroke-linejoin="round" stroke-linecap="square" />
+        <g>
+            <path d="M-10.5 2.5L-11.5 1.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-1.5 2.5L-0.5 2.5L0.5 2.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-1.5 2.5L-0.5 2.5L0.5 2.5" stroke-linejoin="round" fill="none" stroke="white" stroke-width="0.1"
+                stroke-dasharray="0.3 0.2" />
+            <path d="M-5.5 1.5L-5.5 0.5L-4.5 -0.5L-3.5 -0.5" stroke-linejoin="round" fill="none"
+                stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <path d="M-0.5 4.5L-0.5 3.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-3.5 -0.5L-2.5 -0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-11.5 0.5L-11.5 1.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-11.5 0.5L-11.5 1.5" stroke-linejoin="round" fill="none" stroke="white" stroke-width="0.1"
+                stroke-dasharray="0.3 0.2" />
+            <path d="M-11.5 -0.5L-11.5 0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-11.5 -0.5L-11.5 0.5" stroke-linejoin="round" fill="none" stroke="white" stroke-width="0.1"
+                stroke-dasharray="0.3 0.2" />
+            <path d="M-2.5 -0.5L-1.5 -0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-10.5 2.5L-9.5 2.5L-8.5 2.5L-7.5 2.5" stroke-linejoin="round" fill="none"
+                stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <path d="M-7.5 2.5L-6.5 2.5L-5.5 1.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-10.5 2.5L-9.5 2.5L-8.5 3.5L-7.5 3.5" stroke-linejoin="round" fill="none"
+                stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <path d="M-5.5 1.5L-5.5 2.5L-6.5 3.5L-7.5 3.5" stroke-linejoin="round" fill="none"
+                stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <path d="M-1.5 -0.5L-0.5 -0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-0.5 -0.5L0.5 -0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-14.5 -0.5L-14.5 0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-14.5 -0.5L-14.5 0.5" stroke-linejoin="round" fill="none" stroke="white" stroke-width="0.1"
+                stroke-dasharray="0.3 0.2" />
+            <path d="M-10.5 2.5L-11.5 2.5L-12.5 2.5L-13.5 2.5" stroke-linejoin="round" fill="none"
+                stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <path d="M-13.5 2.5L-14.5 2.5L-15.5 2.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-10.5 2.5L-11.5 2.5L-12.5 2.5L-13.5 2.5" stroke-linejoin="round" fill="none"
+                stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <path d="M-13.5 2.5L-14.5 1.5L-14.5 0.5" stroke-linejoin="round" fill="none" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <path d="M-13.5 2.5L-14.5 1.5L-14.5 0.5" stroke-linejoin="round" fill="none" stroke="white"
+                stroke-width="0.1" stroke-dasharray="0.3 0.2" />
+        </g>
+        <g>
+            <ellipse id="SAT" cx="-3.5" cy="-0.5" rx="0.35" ry="0.35" fill="white" stroke="black" stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-3.5" y="-1.57">Satus</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-3.5" y="-1.17">Services</text>
+            </g>
+            <path d="M-2.5 -0.595l2.7554552980815445e-17 0.44999999999999996" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-2.5" y="0.63">Conby</text>
+            </g>
+            <ellipse id="DE" cx="-5.5" cy="1.5" rx="0.35" ry="0.35" fill="white" stroke="black" stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="-4.85" y="1.43">Dovedale</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="-4.85" y="1.83">East</text>
+            </g>
+            <ellipse id="DCent" cx="-10.5" cy="2.5" rx="0.35" ry="0.35" fill="white" stroke="black"
+                stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-11" y="3.43">Dovedale</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-11" y="3.83">Central</text>
+            </g>
+            <ellipse id="GE" cx="-11.5" cy="1.5" rx="0.35" ry="0.35" fill="white" stroke="black" stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="-10.85" y="1.43">Gleethrop</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="-10.85" y="1.83">End</text>
+            </g>
+            <ellipse id="MS" cx="-15.5" cy="2.5" rx="0.35" ry="0.35" fill="white" stroke="black" stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-15.5" y="3.63">Masonfield</text>
+            </g>
+            <path d="M-1.5 2.15l4.286263797015736e-17 0.7" stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <g>
+                <text style="font-family: &quot;PT Sans&quot;; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-1.5" y="1.63">⠀</text>
+            </g>
+            <g transform="matrix(1, 0, 0, 1, -0.510216, -0.013427)">
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="1.15" y="2.43">Unelectrified</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="1.15" y="2.83">Section</text>
+            </g>
+            <ellipse cx="-0.5" cy="3.5" rx="0.35" ry="0.35" fill="white" stroke="black" stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: end; white-space: pre;"
+                    x="-1.15" y="3.43">Interchange/</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: end; white-space: pre;"
+                    x="-1.15" y="3.83">Main Station</text>
+            </g>
+            <path d="M-0.85 4.5l0.7 0" stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="0.15" y="4.43">Limited</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="0.15" y="4.83">Services</text>
+            </g>
+            <path d="M-11.595 0.5l0.44999999999999996 0" stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="-10.85" y="0.63">Perthyne</text>
+            </g>
+            <path d="M-11.85 -0.5l0.7 0" stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; white-space: pre;"
+                    x="-10.85" y="-0.37">Mazewood</text>
+            </g>
+            <ellipse id="FM" cx="-1.5" cy="-0.5" rx="0.35" ry="0.35" fill="white" stroke="black" stroke-width="0.16" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-1.5" y="-1.57">Fanory</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-1.5" y="-1.17">Mill</text>
+            </g>
+            <path d="M-14.405 0.5l-0.44999999999999996 5.510910596163089e-17" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: end; white-space: pre;"
+                    x="-15.15" y="0.43">Codsall</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: end; white-space: pre;"
+                    x="-15.15" y="0.83">Castle</text>
+            </g>
+            <path d="M-14.15 -0.5l-0.7 8.572527594031472e-17" stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: end; white-space: pre;"
+                    x="-15.15" y="-0.57">Glassbury</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: end; white-space: pre;"
+                    x="-15.15" y="-0.17">Junction</text>
+            </g>
+            <path d="M-7.5 3.405l2.7554552980815445e-17 0.44999999999999996" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-7.5" y="4.43">Cosdale</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-7.5" y="4.83">Harbour</text>
+            </g>
+            <path d="M-7.5 2.595l-8.266365894244633e-17 -0.44999999999999996" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-7.5" y="1.43">Wington</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-7.5" y="1.83">Mount</text>
+            </g>
+            <path d="M-0.5 -0.595l2.7554552980815445e-17 0.44999999999999996" stroke="hsl(203,100%,50%)"
+                stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-0.5" y="0.43">Fisherman's</text>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-0.5" y="0.83">Halt</text>
+            </g>
+            <path d="M0.5 -0.85l4.286263797015736e-17 0.7" stroke="hsl(203,100%,50%)" stroke-width="0.2" />
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="0.5" y="-1.37">Ashburn</text>
+            </g>
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-13.5" y="3.2">MC</text>
+            </g>
+            <g>
+                <text
+                    style="fill: rgb(255, 255, 255); font-family: &quot;PT Sans&quot;, sans-serif; font-size: 0.4px; text-anchor: middle; white-space: pre;"
+                    x="-0.5" y="-0.9">BL</text>
+            </g>
+
+            <g />
+        </g>
+        <rect id="GJ" x="-14.65" y="-0.65" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+        <rect id="CC" x="-14.65" y="0.35" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+        <rect id="MW" x="-11.65" y="-0.65" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+        <rect id="CH" x="-7.65" y="3.35" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+        <rect id="AB" x="0.35" y="-0.65" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+
+        <rect id="MC" x="-13.65" y="2.35" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+        <rect id="BL" x="-0.65" y="-0.65" width="0.3" height="0.3" fill="white" stroke="black" fill="white"
+            stroke="black" stroke-width="0.1" />
+
+    </svg>
+    <!--END MAP SVG-->
+
+    <div>
+        <table id="boxList">
+            <tr>
+                <td>Box</td>
+                <td>Status</td>
+                <td>Player</td>
+            </tr>
+        </table>
     </div>
+
     <script src="dovedaleBoxer.js"></script>
 </body>
 

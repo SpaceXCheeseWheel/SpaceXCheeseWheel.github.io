@@ -80,7 +80,7 @@ const SIGNAL_BOXES = {
 		name: "Masonfield",
 		x: 10425,
 		y: -609,
-		rad: 18,
+		rad: 20,
 	}
 };
 
@@ -92,7 +92,8 @@ const STALE_SERVER_TIMEOUT = 30_000;
 
 const elements = {
 	serverSelect: document.getElementById("servers"),
-	boxList: document.getElementById("boxList")
+	boxList: document.getElementById("boxList"),
+	map: document.getElementById("map")
 };
 
 class AppState {
@@ -303,20 +304,20 @@ const updateBoxList = (data = null) => {
 			);
 			if (distance < rad) {
 				console.log(`Player ${player.username} is in box ${name}`);
-				if (occupiedBoxes[box]) {
-					occupiedBoxes[box] += ` <i>and</i> ` + player.username;
-				}
-				else {
-					occupiedBoxes[box] = player.username;
-				}
+				occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] =player.username;
+
 			}
 		});
 	});
-	let html = `<tr><td>Box</td><td>Player</td></tr>`;
+	let html = `<tr><td>Box</td><td>Status</td><td>Player</td></tr>`;
 	Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
-		html += `<tr><td>${name}</td><td>${occupiedBoxes[box] || "Empty"}</td></tr>`;
+		html += `<tr><td>[${box}] ${name}</td><td>${occupiedBoxes[box] ? "✓" : "X"}</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td></tr>`;
+		elements.map.getElementById(box)?.setAttribute("fill", occupiedBoxes[box] ? "green" : "red");
 	});
 	elements.boxList.innerHTML = html;
+
+	
+
 }
 
 const updateServerList = (data = null) => {
