@@ -94,7 +94,8 @@ const elements = {
 	serverSelect: document.getElementById("servers"),
 	boxList: document.getElementById("boxList"),
 	map: document.getElementById("map"),
-	connectionStatus: document.getElementById("connectionStatus")
+	connectionStatus: document.getElementById("connectionStatus"),
+	serverStats: document.getElementById("serverStats"),
 };
 
 class AppState {
@@ -283,30 +284,46 @@ const updateBoxList = (data = null) => {
 	}
 
 	let occupiedBoxes = new Set();
-
+	let trainCount = 0;
+	let mannedBoxCount = 0;
 	if (selectedValue != "default") {
 		state.serverData[selectedValue].players.forEach((player) => {
+			// for each player in our selected server:
+			// 1. check if a player is driving a train
+			// 2. check if a player is within proximity of a signal box
+			// sconsole.log(player);
+			
+			player.trainData ? trainCount++: null; // if train data exists traincount++			
+
 			Object.entries(SIGNAL_BOXES).forEach(([box, { name, x, y, rad }]) => {
 				const distance = Math.sqrt(
 					(player.position.x - x) ** 2 + (player.position.y - y) ** 2
 				);
 				if (distance < rad) {
 					// console.log(`Player ${player.username} is in box ${name}`);
-					occupiedBoxes[box] ? (occupiedBoxes[box] += ` <i>and</i> ` + player.username) : occupiedBoxes[box] = player.username;
-
+					if(occupiedBoxes[box]) {
+						(occupiedBoxes[box] += ` <i>and</i> ` + player.username);
+					}
+					else {
+						occupiedBoxes[box] = player.username;
+						mannedBoxCount++;
+					}
 				}
 			});
 		});
 	}
 
+	// push data to page
 	let html = `<tr><td style="width:40%">Box</td><td>Status</td><td style="width:50%">Player</td></tr>`;
 	Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
+		// table:
 		html += `<tr><td>[${box}] ${name}</td><td>${occupiedBoxes[box] ? "✓" : "X"}</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td></tr>`;
-
+		// update map:
 		elements.map.getElementById(box)?.setAttribute("fill", occupiedBoxes[box] ? "forestgreen" : "red");
 	});
 	elements.boxList.innerHTML = html;
 
+	elements.serverStats.innerHTML = `<tr><td style="width:50%">Trains: ${trainCount}</td><td style="width:50%">Manned Boxes: ${mannedBoxCount} / 13</td></tr>`;
 
 
 };
