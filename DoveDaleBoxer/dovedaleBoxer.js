@@ -108,6 +108,7 @@ class AppState {
 		this.maxReconnectAttempts = 3;
 		this.reconnectTimeout = null;
 		this.staleCheckInterval = null;
+		this.leaderboardData = {};
 	}
 
 	getAllPlayers() {
@@ -286,26 +287,31 @@ const updateBoxList = (data = null) => {
 	let occupiedBoxes = new Set();
 	let trainCount = 0;
 	let mannedBoxCount = 0;
+
+	let leaderboardPlayerIDs = Object.values(state.leaderboardData.leaderboard).map((x) => x.id).flat();
+	leaderboardPlayerIDs.push("85133710"); // TODO remove testing
+
 	if (selectedValue != "default") {
 		state.serverData[selectedValue].players.forEach((player) => {
 			// for each player in our selected server:
 			// 1. check if a player is driving a train
 			// 2. check if a player is within proximity of a signal box
 			// sconsole.log(player);
-			
-			player.trainData ? trainCount++: null; // if train data exists traincount++			
+
+			player.trainData ? trainCount++ : null; // if train data exists traincount++			
 
 			Object.entries(SIGNAL_BOXES).forEach(([box, { name, x, y, rad }]) => {
 				const distance = Math.sqrt(
 					(player.position.x - x) ** 2 + (player.position.y - y) ** 2
 				);
 				if (distance < rad) {
+					const formattedusername = `${leaderboardPlayerIDs.includes(player.userId.toString()) ? "<span style=\"color: red\">" + player.username + "</span>" : player.username}`;
 					// console.log(`Player ${player.username} is in box ${name}`);
-					if(occupiedBoxes[box]) {
-						(occupiedBoxes[box] += ` <i>and</i> ` + player.username);
+					if (occupiedBoxes[box]) {
+						(occupiedBoxes[box] += ` <i>and</i> ` + formattedusername);
 					}
 					else {
-						occupiedBoxes[box] = player.username;
+						occupiedBoxes[box] = formattedusername;
 						mannedBoxCount++;
 					}
 				}
@@ -376,10 +382,33 @@ elements.serverSelect.addEventListener("change", () => {
 	state.currentServer = elements.serverSelect.value;
 });
 
+const getLeaderboard = async () => {
+	const CACHE_DURATION = 43200; // 12 hours in seconds
+	let leaderboardCacheDate = JSON.parse(localStorage.getItem("DD_LEADERBOARD"))?.lastUpdated;
+	if (!leaderboardCacheDate || (Date.now() / 1000 - leaderboardCacheDate) > CACHE_DURATION) {
+		// leaderboard does not exist or is out of date. 
+		// 1. get data, 2. update state, 3. store in localstorage
+		// leaderboardData = await fetch("https://kairi.cat/databases/leaderboard");
+
+		// TODO: API returns "lastUpdated" key, but don't trust. if they don't get data for a while we slam them every time...
+		//  keep our own cache time?
+		console.log("Fetching leaderboard...");
+		try {
+			const leaderboardDataRaw = await fetch("https://kairi.cat/databases/leaderboard").then(x => x.text());
+			localStorage.setItem("DD_LEADERBOARD", leaderboardDataRaw);
+		} catch (err) {
+			console.error("Error fetching leaderboard data", err);
+		}
+
+	}
+	state.leaderboardData = JSON.parse(localStorage.getItem("DD_LEADERBOARD")) || {};
+};
+
 const start = () => {
 	elements.serverSelect.innerHTML =
 		'<option value="default">Select Server</option>';
 	createWebSocket();
+	getLeaderboard();
 };
 
 start();
