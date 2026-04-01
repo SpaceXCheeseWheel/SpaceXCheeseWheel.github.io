@@ -291,8 +291,15 @@ const updateBoxList = (data = null) => {
 	let trainCount = 0;
 	let mannedBoxCount = 0;
 
-	let leaderboardPlayerIDs = Object.values(state.leaderboardData.leaderboard).map((x) => x.id).flat();
-	leaderboardPlayerIDs.push("85133710"); // TODO remove testing
+	// diverging behavior for browsers
+	//  firefox is ok with this, but chrome's Object.values blows up trying to access state.leaderboardData.leaderboard
+	let leaderboardPlayerIDs = [];
+
+	if (state.leaderboardData?.leaderboard) {
+		leaderboardPlayerIDs = Object.values(state.leaderboardData.leaderboard).map((x) => x.id).flat();
+		leaderboardPlayerIDs.push("85133710"); // TODO remove testing
+	}
+	
 
 	if (selectedValue != "default") {
 		state.serverData[selectedValue].players.forEach((player) => {
@@ -401,6 +408,7 @@ elements.serverSelect.addEventListener("change", () => {
 	if (state.currentServer != "default") {
 		localStorage.setItem("DD_LASTSERVER", state.currentServer);
 	}
+	state.lastSeenOccupiedBox = new Set(); // reset box timers
 });
 
 const getLeaderboard = async () => {
