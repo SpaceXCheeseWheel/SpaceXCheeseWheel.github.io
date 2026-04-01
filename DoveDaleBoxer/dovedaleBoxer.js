@@ -283,7 +283,7 @@ const updateBoxList = (data = null) => {
 	if (selectedValue == "default") {
 		Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
 			elements.map.getElementById(box)?.setAttribute("fill", "white");
-		});
+		});state.leaderboardData.leaderboard
 	}
 	*/
 
