@@ -109,6 +109,7 @@ class AppState {
 		this.reconnectTimeout = null;
 		this.staleCheckInterval = null;
 		this.leaderboardData = {};
+		this.lastSeenOccupiedBox = new Set();
 	}
 
 	getAllPlayers() {
@@ -278,11 +279,13 @@ const updateBoxList = (data = null) => {
 
 	const selectedValue = elements.serverSelect.value;
 
+	/* // redundant
 	if (selectedValue == "default") {
 		Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
 			elements.map.getElementById(box)?.setAttribute("fill", "white");
 		});
 	}
+	*/
 
 	let occupiedBoxes = new Set();
 	let trainCount = 0;
@@ -313,6 +316,7 @@ const updateBoxList = (data = null) => {
 					else {
 						occupiedBoxes[box] = formattedusername;
 						mannedBoxCount++;
+						state.lastSeenOccupiedBox[box] = Date.now();
 					}
 				}
 			});
@@ -323,9 +327,23 @@ const updateBoxList = (data = null) => {
 	let html = `<tr><td style="width:40%">Box</td><td>Status</td><td style="width:50%">Player</td></tr>`;
 	Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
 		// table:
-		html += `<tr><td>[${box}] ${name}</td><td>${occupiedBoxes[box] ? "✓" : "X"}</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td></tr>`;
+		const OCCUPY_TIME = 60000; // ms for a box to be considered occupied. 1 min
+		let rowColor = "red";
+		if (occupiedBoxes[box]) {
+			rowColor = "forestgreen"
+		}
+		else if(Date.now() - state.lastSeenOccupiedBox[box] < OCCUPY_TIME) {
+			rowColor = "yellow"
+		}
+
+		html += `<tr>
+		<td>[${box}] ${name}</td>
+		<td><svg height=1em style="float:left" viewBox="0 0 2 2"><ellipse cx="1" cy="1" rx="0.8" ry="0.8" fill="${rowColor}" stroke="white" stroke-width="0.4" /></svg>
+		</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td>
+		</tr>`;
+
 		// update map:
-		elements.map.getElementById(box)?.setAttribute("fill", occupiedBoxes[box] ? "forestgreen" : "red");
+		elements.map.getElementById(box)?.setAttribute("fill", rowColor);
 	});
 	elements.boxList.innerHTML = html;
 
@@ -380,6 +398,9 @@ const updateServerList = (data = null) => {
 
 elements.serverSelect.addEventListener("change", () => {
 	state.currentServer = elements.serverSelect.value;
+	if (state.currentServer != "default") {
+		localStorage.setItem("DD_LASTSERVER", state.currentServer);
+	}
 });
 
 const getLeaderboard = async () => {
