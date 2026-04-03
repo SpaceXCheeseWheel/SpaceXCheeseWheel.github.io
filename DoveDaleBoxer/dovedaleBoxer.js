@@ -110,7 +110,7 @@ class AppState {
 		this.staleCheckInterval = null;
 		this.leaderboardData = {};
 
-		this.boxPlayersTMP = {};
+		this.boxPlayers = {};
 		this.trainPlayers = 0; // # of trains in server.
 	}
 
@@ -144,6 +144,19 @@ const cleanupStaleServers = () => {
 		updateServerList();
 		//drawScene();
 	}
+
+	// clean up disconnected players.
+	// TODO - this should only be a problem when loading from cache.
+	// (!getOnlineUserIDs().includes(player.userId))
+	Object.entries(state.boxPlayers).map(([boxName, boxObject]) => {
+		Object.keys(boxObject).forEach((userID) => {
+			if (!getOnlineUserIDs().includes(userID)) {
+				console.log(`Purging user ${boxName}/${userID}`);
+				delete state.boxPlayers[boxName][userID];
+			}
+		})
+	});
+
 };
 
 const startStaleServerCleanup = () => {
@@ -308,30 +321,31 @@ const getBoxPlayers = () => {
 			);
 			if (distance < rad) {
 				// a player is in a box.
-				if (!state.boxPlayersTMP[box]) {
+				if (!state.boxPlayers[box]) {
 					// if box does not exist, make it.
-					state.boxPlayersTMP[box] = {};
+					state.boxPlayers[box] = {};
 				}
-				if (!state.boxPlayersTMP[box][player.userId]) {
+				if (!state.boxPlayers[box][player.userId]) {
 					// NEW Player in box
-					state.boxPlayersTMP[box][player.userId] = { username: player.username, inBox: true, firstSeen: Date.now(), lastSeen: Date.now() };
+					state.boxPlayers[box][player.userId] = { username: player.username, inBox: true, firstSeen: Date.now(), lastSeen: Date.now() };
 				}
 				else {
 					// existing player remaining in box, update last seen
-					state.boxPlayersTMP[box][player.userId].lastSeen = Date.now();
-					state.boxPlayersTMP[box][player.userId].inBox = true;
+					state.boxPlayers[box][player.userId].lastSeen = Date.now();
+					state.boxPlayers[box][player.userId].inBox = true;
 				}
 			}
 			else {
 				// player is not in a box, update their status. 
 				// remove if their last seen is too old.
-				if (state.boxPlayersTMP[box] && state.boxPlayersTMP[box][player.userId]) { // is there a better way of checking if this player exists in the box?
-					state.boxPlayersTMP[box][player.userId].inBox = false;
-					// if last seen is over a minute ago, remove from box.
-					if (Date.now() - state.boxPlayersTMP[box][player.userId].lastSeen > OCCUPY_TIME) {
-						delete state.boxPlayersTMP[box][player.userId];
-						if (Object.keys(state.boxPlayersTMP[box]).length === 0) {
-							delete state.boxPlayersTMP[box]; // and clear out box once it's empty
+				if (state.boxPlayers[box] && state.boxPlayers[box][player.userId]) { // is there a better way of checking if this player exists in the box?
+					state.boxPlayers[box][player.userId].inBox = false;
+					// if last seen is over a minute ago, OR if occupation was less than 10 sec, OR if player left the server, remove them
+					
+					if ((Date.now() - state.boxPlayers[box][player.userId].lastSeen > OCCUPY_TIME) || (state.boxPlayers[box][player.userId].lastSeen - state.boxPlayers[box][player.userId].firstSeen < 10*1000)) {
+						delete state.boxPlayers[box][player.userId];
+						if (Object.keys(state.boxPlayers[box]).length === 0) {
+							delete state.boxPlayers[box]; // and clear out box once it's empty
 						}
 					}
 				}
@@ -385,9 +399,9 @@ const updateMapAndTable = (data = null) => {
 			let boxStatusColor = "red";
 			let activePlayer = false;
 
-			if (state.boxPlayersTMP[boxName] && Object.keys(state.boxPlayersTMP[boxName]).length > 0) { //  I though refactoring this would help but it's just more spaghetti
+			if (state.boxPlayers[boxName] && Object.keys(state.boxPlayers[boxName]).length > 0) { //  I though refactoring this would help but it's just more spaghetti
 				mannedBoxCount++;
-				Object.entries(state.boxPlayersTMP[boxName]).forEach(([playerID, playerObject]) => {
+				Object.entries(state.boxPlayers[boxName]).forEach(([playerID, playerObject]) => {
 					if (playerColumn != "") {
 						playerColumn += "<i> and </i>"; // add "and"
 					}
@@ -444,6 +458,10 @@ const updateMapAndTable = (data = null) => {
 };
 
 
+const getOnlineUserIDs = () => {
+	return state.serverData[elements.serverSelect.value].players.map((p) => String(p.userId));
+}
+
 const updateServerList = (data = null) => {
 	const currentServers = Object.keys(state.serverData);
 	const existingServers = Array.from(elements.serverSelect.options)
@@ -492,9 +510,10 @@ elements.serverSelect.addEventListener("change", () => {
 	state.currentServer = elements.serverSelect.value;
 	if (state.currentServer != "default") {
 		localStorage.setItem("DD_LASTSERVER", state.currentServer);
+		loadBoxCacheData();
 	}
 
-	state.boxPlayersTMP = {}; // reset box timers
+	state.boxPlayers = {}; // reset box timers
 });
 
 const getLeaderboard = async () => {
@@ -519,11 +538,45 @@ const getLeaderboard = async () => {
 	state.leaderboardData = JSON.parse(localStorage.getItem("DD_LEADERBOARD")) || {};
 };
 
+const loadBoxCacheData = () => {
+	// saves box data so if a page refreshes, it remembers the players.
+	// only meant for short term
+	const BOX_CACHE_DURATION_MS = 10*60*1000; // 10 minutes in ms
+	let boxCacheDate = JSON.parse(localStorage.getItem("DD_BOXCACHE"))?.lastUpdated;
+	if (!boxCacheDate || (Date.now() - boxCacheDate) > BOX_CACHE_DURATION_MS) {
+		// cache is old, clear it
+		localStorage.clear("DD_BOXCACHE");
+		console.log("Clearing box cache")
+	}
+	else {
+		console.log("Loading boxcache")
+		const boxCacheData = JSON.parse(localStorage.getItem("DD_BOXCACHE"));
+		const boxCacheServer = boxCacheData.server;
+
+		elements.serverSelect.value = boxCacheServer;
+		state.currentServer = boxCacheData.server;
+		state.boxPlayers = boxCacheData.data;
+	}
+}
+
 const updatePage = () => {
+	
 	if (state.ws?.readyState == WebSocket.OPEN) {
+
+		updateServerList();
+		// if just loaded (default selection) and server exists, check if a cache exists
+		if(state.currentServer == "default" && Object.keys(state.serverData).includes(JSON.parse(localStorage.getItem("DD_BOXCACHE"))?.server)) {
+			console.log("Box Cache Exists")
+			
+			loadBoxCacheData();
+		}
+		if (state.currentServer != "default") {
+			const boxCacheData = JSON.stringify({server: state.currentServer, lastUpdated: Date.now(), data: state.boxPlayers})
+			localStorage.setItem("DD_BOXCACHE", boxCacheData);
+		}
+
 		getBoxPlayers();
 		updateMapAndTable(); // updates every 1sec.
-		updateServerList();
 	}
 };
 
