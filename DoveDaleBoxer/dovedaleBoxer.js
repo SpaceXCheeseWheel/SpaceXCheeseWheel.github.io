@@ -109,7 +109,9 @@ class AppState {
 		this.reconnectTimeout = null;
 		this.staleCheckInterval = null;
 		this.leaderboardData = {};
-		this.lastSeenOccupiedBox = new Set();
+
+		this.boxPlayersTMP = {};
+		this.trainPlayers = 0; // # of trains in server.
 	}
 
 	getAllPlayers() {
@@ -195,9 +197,6 @@ const createWebSocket = () => {
 					lastUpdate: Date.now(),
 				};
 			}
-			updateServerList(data);
-
-			updateBoxList(data);
 
 			// each time we get data, do a blip!
 			elements.connectionStatus.setAttribute("fill", "lightGreen");
@@ -273,7 +272,80 @@ const resetReconnection = () => {
 	}
 };
 
-const updateBoxList = (data = null) => {
+const getBoxPlayers = () => {
+	// state.boxPlayers
+	// "BOXNAME": {  
+	//   "PLAYERID": {
+	// 		username
+	//   	firstSeen
+	//   	lastSeen (// if last seen exceeds a timeout, remove them.)
+	//      }
+	//   }
+
+	// for each player in our selected server:
+	// 1. check if a player is driving a train
+	// 2. check if a player is within proximity of a signal box
+	// sconsole.log(player);
+
+	const OCCUPY_TIME = 90000; // ms for a box to be considered occupied. 1:30 min
+
+	state.trainPlayers = 0; // reset
+
+	const selectedValue = elements.serverSelect.value;
+	if (selectedValue == "default") {
+		return;
+	}
+
+	// add or update players in boxes
+
+	state.serverData[selectedValue].players.forEach((player) => {
+			if (player.trainData) { // skip train players
+				state.trainPlayers++;
+			}
+		Object.entries(SIGNAL_BOXES).forEach(([box, { name, x, y, rad }]) => {
+			const distance = Math.sqrt(
+				(player.position.x - x) ** 2 + (player.position.y - y) ** 2
+			);
+			if (distance < rad) {
+				// a player is in a box.
+				if (!state.boxPlayersTMP[box]) {
+					// if box does not exist, make it.
+					state.boxPlayersTMP[box] = {};
+				}
+				if (!state.boxPlayersTMP[box][player.userId]) {
+					// NEW Player in box
+					state.boxPlayersTMP[box][player.userId] = { username: player.username, inBox: true, firstSeen: Date.now(), lastSeen: Date.now() };
+				}
+				else {
+					// existing player remaining in box, update last seen
+					state.boxPlayersTMP[box][player.userId].lastSeen = Date.now();
+					state.boxPlayersTMP[box][player.userId].inBox = true;
+				}
+			}
+			else {
+				// player is not in a box, update their status. 
+				// remove if their last seen is too old.
+				if (state.boxPlayersTMP[box] && state.boxPlayersTMP[box][player.userId]) { // is there a better way of checking if this player exists in the box?
+					state.boxPlayersTMP[box][player.userId].inBox = false;
+					// if last seen is over a minute ago, remove from box.
+					if (Date.now() - state.boxPlayersTMP[box][player.userId].lastSeen > OCCUPY_TIME) {
+						delete state.boxPlayersTMP[box][player.userId];
+						if (Object.keys(state.boxPlayersTMP[box]).length === 0) {
+							delete state.boxPlayersTMP[box]; // and clear out box once it's empty
+						}
+					}
+				}
+			}
+		});
+	});
+};
+
+const getTrainPlayers = () => {
+	// TODO
+};
+
+
+const updateMapAndTable = (data = null) => {
 	// console.log("==BOX LIST==")
 	// const playersArray = processPlayerData(data);
 
@@ -288,7 +360,6 @@ const updateBoxList = (data = null) => {
 	*/
 
 	let occupiedBoxes = new Set();
-	let trainCount = 0;
 	let mannedBoxCount = 0;
 
 	// diverging behavior for browsers
@@ -299,65 +370,79 @@ const updateBoxList = (data = null) => {
 		leaderboardPlayerIDs = Object.values(state.leaderboardData.leaderboard).map((x) => x.id).flat();
 		leaderboardPlayerIDs.push("85133710"); // TODO remove testing
 	}
-	
 
+	// table header.
+	let tableHtml = `<tr><td style="width:40%">Box</td><td>Status</td><td style="width:50%">Player</td></tr>`;
+	// TESTING new box system
 	if (selectedValue != "default") {
-		state.serverData[selectedValue].players.forEach((player) => {
-			// for each player in our selected server:
-			// 1. check if a player is driving a train
-			// 2. check if a player is within proximity of a signal box
-			// sconsole.log(player);
+		Object.entries(SIGNAL_BOXES).forEach(([boxName, boxObject]) => {
+			tableHtml += `<tr>`;
+			let nameColumn = `<td>[${boxName}] ${boxObject.name}</td>`; // col 1 name
+			let statusColumn = "";
+			let playerColumn = "";
 
-			player.trainData ? trainCount++ : null; // if train data exists traincount++			
+			// player is in a box
+			let boxStatusColor = "red";
+			let activePlayer = false;
 
-			Object.entries(SIGNAL_BOXES).forEach(([box, { name, x, y, rad }]) => {
-				const distance = Math.sqrt(
-					(player.position.x - x) ** 2 + (player.position.y - y) ** 2
-				);
-				if (distance < rad) {
-					const formattedusername = `${leaderboardPlayerIDs.includes(player.userId.toString()) ? "<span style=\"color: red\">" + player.username + "</span>" : player.username}`;
-					// console.log(`Player ${player.username} is in box ${name}`);
-					if (occupiedBoxes[box]) {
-						(occupiedBoxes[box] += ` <i>and</i> ` + formattedusername);
+			if (state.boxPlayersTMP[boxName] && Object.keys(state.boxPlayersTMP[boxName]).length > 0) { //  I though refactoring this would help but it's just more spaghetti
+				mannedBoxCount++;
+				Object.entries(state.boxPlayersTMP[boxName]).forEach(([playerID, playerObject]) => {
+					if (playerColumn != "") {
+						playerColumn += "<i> and </i>"; // add "and"
 					}
-					else {
-						occupiedBoxes[box] = formattedusername;
-						mannedBoxCount++;
-						state.lastSeenOccupiedBox[box] = Date.now();
+					
+					playerColumn += `<span id="username">`;
+					
+					if (playerObject.inBox) {
+						// player is in box. check if they are a leaderboard player and color red.
+						playerColumn += `${leaderboardPlayerIDs.includes(playerID.toString()) ? "<span style=\"color: red\">" + playerObject.username + "</span>" : playerObject.username}`;;
+						activePlayer = true;
 					}
+					else { // player recently in box but not currently.
+						playerColumn += `<span style="color: #888;">${playerObject.username}</span>`;
+					}
+					const timeInBoxMS = Date.now() - playerObject.firstSeen;
+					// greater than 1 hr?
+					const timeString = (timeInBoxMS < (1000 * 60 * 60)) ? (String(Math.floor(timeInBoxMS / 60000)) + "min") : (String(Math.floor(timeInBoxMS / (1000 * 60 * 60))) + "hr" + String(Math.floor(timeInBoxMS / 60000) % 60) + "min");
+					playerColumn += `</span>`;
+					playerColumn += `<small style="color: #888">[${timeString}]</small>`;
+
+				});
+
+				// green: active player in box
+				if (activePlayer) {
+					boxStatusColor = "forestgreen";
 				}
-			});
+				// yellow: recently active player in box
+				else {
+					boxStatusColor = "yellow";
+				}
+
+			}
+			// update table row
+			statusColumn = `<td><svg height=1em style="float:left" viewBox="0 0 2 2"><ellipse cx="1" cy="1" rx="0.8" ry="0.8" fill="${boxStatusColor}" stroke="white" stroke-width="0.4" /></svg></td>`;
+			if (playerColumn.length == 0) {
+				playerColumn = `<td><div style='color: #888;'>Empty</div></td>`;
+			}
+			else {
+				playerColumn = `<td>${playerColumn}</td>`;
+			}
+
+			tableHtml += nameColumn + statusColumn + playerColumn;
+			tableHtml += `</tr>`;
+
+			elements.map.getElementById(boxName)?.setAttribute("fill", boxStatusColor);
 		});
+		elements.boxList.innerHTML = tableHtml;
+		elements.serverStats.innerHTML = `<tr><td style="width:50%">Trains: ${state.trainPlayers}</td><td style="width:50%">Manned Boxes: ${mannedBoxCount} / 13</td></tr>`;
 	}
 
-	// push data to page
-	let html = `<tr><td style="width:40%">Box</td><td>Status</td><td style="width:50%">Player</td></tr>`;
-	Object.entries(SIGNAL_BOXES).forEach(([box, { name }]) => {
-		// table:
-		const OCCUPY_TIME = 60000; // ms for a box to be considered occupied. 1 min
-		let rowColor = "red";
-		if (occupiedBoxes[box]) {
-			rowColor = "forestgreen"
-		}
-		else if(Date.now() - state.lastSeenOccupiedBox[box] < OCCUPY_TIME) {
-			rowColor = "yellow"
-		}
-
-		html += `<tr>
-		<td>[${box}] ${name}</td>
-		<td><svg height=1em style="float:left" viewBox="0 0 2 2"><ellipse cx="1" cy="1" rx="0.8" ry="0.8" fill="${rowColor}" stroke="white" stroke-width="0.4" /></svg>
-		</td><td>${occupiedBoxes[box] || "<div style='color: #888;'>Empty</div>"}</td>
-		</tr>`;
-
-		// update map:
-		elements.map.getElementById(box)?.setAttribute("fill", rowColor);
-	});
-	elements.boxList.innerHTML = html;
-
-	elements.serverStats.innerHTML = `<tr><td style="width:50%">Trains: ${trainCount}</td><td style="width:50%">Manned Boxes: ${mannedBoxCount} / 13</td></tr>`;
-
-
+	if (selectedValue == "default") {
+		return;
+	}
 };
+
 
 const updateServerList = (data = null) => {
 	const currentServers = Object.keys(state.serverData);
@@ -408,7 +493,8 @@ elements.serverSelect.addEventListener("change", () => {
 	if (state.currentServer != "default") {
 		localStorage.setItem("DD_LASTSERVER", state.currentServer);
 	}
-	state.lastSeenOccupiedBox = new Set(); // reset box timers
+
+	state.boxPlayersTMP = {}; // reset box timers
 });
 
 const getLeaderboard = async () => {
@@ -433,11 +519,22 @@ const getLeaderboard = async () => {
 	state.leaderboardData = JSON.parse(localStorage.getItem("DD_LEADERBOARD")) || {};
 };
 
+const updatePage = () => {
+	if (state.ws?.readyState == WebSocket.OPEN) {
+		getBoxPlayers();
+		updateMapAndTable(); // updates every 1sec.
+		updateServerList();
+	}
+};
+
+
 const start = () => {
 	elements.serverSelect.innerHTML =
 		'<option value="default">Select Server</option>';
 	createWebSocket();
 	getLeaderboard();
+
+	setInterval(updatePage, 1000);
 };
 
 start();
