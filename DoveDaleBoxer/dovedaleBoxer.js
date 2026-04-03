@@ -510,7 +510,7 @@ elements.serverSelect.addEventListener("change", () => {
 	state.currentServer = elements.serverSelect.value;
 	if (state.currentServer != "default") {
 		localStorage.setItem("DD_LASTSERVER", state.currentServer);
-		loadBoxCacheData();
+		// loadBoxCacheData();
 	}
 
 	state.boxPlayers = {}; // reset box timers
