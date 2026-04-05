@@ -1,3 +1,5 @@
+const WS_SERVER = "wss://map.dovedale.wiki/api/ws";
+
 const WORLD_BOUNDS = {
 	TOP_LEFT: { x: -23818, y: -10426 },
 	BOTTOM_RIGHT: { x: 20504, y: 11377 },
@@ -482,7 +484,7 @@ const createWebSocket = () => {
 		state.ws = null;
 	}
 
-	state.ws = new WebSocket((location.protocol == "http:" ? "ws://" : "wss://") + `${window.location.host}/api/ws`);
+	state.ws = new WebSocket(WS_SERVER);
 
 	state.ws.addEventListener("open", () => {
 		console.log("WebSocket connected");
@@ -849,7 +851,7 @@ const loadMapImages = () => {
 		state.mapImages[row] = [];
 		for (let column = 0; column < MAP_CONFIG.columns; column++) {
 			const image = new Image();
-			image.src = `/images/row-${row + 1}-column-${column + 1}.png`;
+			image.src = `images/row-${row + 1}-column-${column + 1}.png`;
 
 			image.onload = () => {
 				state.loadedImages++;
