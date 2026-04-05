@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>Dovedale Live Map</title>
+	<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+	<link rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&family=Inter:opsz,wght@14..32,200..700" />
+	<meta name="description" content="A live map of Dovedale Railway, showing players with a server selector." />
+	<meta name="keywords" content="dovedale, railway, dovedale railway, dovedale map, live map, dovedale railway map" />
+	<link rel="canonical" href="https://map.dovedale.wiki/" />
+	<link rel="manifest" href="/manifest.json" />
+
+	<meta property="og:title" content="Dovedale Live Map" />
+	<meta property="og:description"
+		content="A live map of Dovedale Railway, showing players across all or a specific server." />
+	<meta property="og:image" content="https://map.dovedale.wiki/images/map-small.png" />
+	<meta property="og:url" content="https://map.dovedale.wiki/" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Dovedale Live Map" />
+	<meta name="twitter:description"
+		content="A live map of Dovedale Railway, showing players across all or a specific server." />
+	<meta name="twitter:image" content="https://map.dovedale.wiki/images/map-small.png" />
+	<style>
+		@font-face {
+			font-family: 'Inter';
+			src: local('Inter'), url(/Inter.woff2) format('woff2');
+		}
+	</style>
+</head>
+
+<body class="bg-zinc-950 text-xl overflow-hidden h-full w-full fixed font-[Inter] text-zinc-100">
+	<div id="connectionPopup" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-zinc-900 rounded-3xl p-4 shadow-xl transition-all duration-300 pointer-events-none">
+		<div class="flex items-center gap-4">
+			<div class="text-red-400 flex-shrink-0">
+				<i class="material-symbols-outlined text-3xl">error</i>
+			</div>
+			<div class="flex-1 flex flex-col gap-0">
+				<h3 class="text-sm font-semibold mb-1 m-0">Connection Lost</h3>
+				<p class="text-xs text-zinc-300 m-0">Unable to connect to the server</p>
+			</div>
+			<button id="reconnectBtn" class="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-600 disabled:cursor-not-allowed border-none rounded-lg px-3 py-2 text-base font-medium cursor-pointer flex items-center gap-1.5 transition-colors duration-200 whitespace-nowrap">
+				<i id="reconnectIcon" class="material-symbols-outlined text-4">refresh</i>
+				Reconnect
+			</button>
+		</div>
+	</div>
+
+	<div class="fixed top-2 left-2 flex gap-3 items-center z-20">
+		<select class="bg-zinc-800 px-2 py-1 rounded text-base sm:text-xl font-[Inter]" id="servers"></select>
+		<p id="players" class="hidden">Players: N/A</p>
+	</div>
+
+	<div class="fixed top-2 right-2 flex gap-2 sm:hidden z-20">
+		<button id="zoom-in" class="bg-zinc-800 w-10 h-10 flex items-center justify-center rounded-full">
+			<span class="material-symbols-outlined">add</span>
+		</button>
+		<button id="zoom-out" class="bg-zinc-800 w-10 h-10 flex items-center justify-center rounded-full">
+			<span class="material-symbols-outlined">remove</span>
+		</button>
+	</div>
+
+	<div class="w-full h-full">
+		<canvas width="2867.7" height="1372.2"></canvas>
+	</div>
+
+	<div id="tooltip"
+		class="pl-3 pr-3.5 py-3 bg-zinc-800 rounded-2xl inline-flex flex-col justify-start items-start gap-2.5 fixed hidden sm:max-w-md max-w-[90vw] z-20">
+		<div id="player" class="inline-flex justify-center items-center gap-1.5">
+			<span class="material-symbols-outlined">person</span>
+			<div class="text-xl">MrToes_guy</div>
+		</div>
+		<div id="destination" class="inline-flex justify-center items-center gap-1.5">
+			<span class="material-symbols-outlined">location_on</span>
+			<div class="text-xl">Sebi's House</div>
+		</div>
+		<div id="train-name" class="inline-flex justify-center items-center gap-1.5">
+			<span class="material-symbols-outlined">train</span>
+			<div class="text-xl">Class 2 Bajillion</div>
+		</div>
+		<div id="headcode" class="inline-flex justify-center items-center gap-1.5">
+			<span class="material-symbols-outlined">pin</span>
+			<div class="text-xl">1P11</div>
+		</div>
+		<div id="train-class" class="inline-flex justify-center items-center gap-1.5">
+			<span class="material-symbols-outlined">tag</span>
+			<div class="text-xl">Passenger</div>
+		</div>
+		<div id="server" class="inline-flex justify-center items-center gap-1.5">
+			<span class="material-symbols-outlined">dns</span>
+			<div class="text-xl">2832198b</div>
+		</div>
+	</div>
+
+	<a class="fixed bottom-2 right-2 flex p-2 align-center bg-zinc-800 rounded-lg hidden z-20" target="_blank"
+		href="https://map.dovedale.wiki" id="pop-out">
+		<i class="material-symbols-outlined">arrow_outward</i>
+	</a>
+
+	<a href="https://github.com/dovedalerailway/dovedale-map"
+		target="_blank"
+		class="fixed bottom-2 right-2 bg-zinc-800 p-2 rounded-lg hover:bg-zinc-700 transition z-30"
+		title="GitHub Repository">
+		<img src="/images/github-mark-white.svg" alt="GitHub Logo" width="28" height="28">
+	</a>
+
+	<p class="fixed bottom-2 left-3 z-20 text-zinc-500 text-sm hidden sm:block h-auto" id="hover-hint">Hover over a dot to see the player's name</p>
+	
+	<script src="index.js?v=22"></script>
+</body>
+
+</html>
