@@ -1,3 +1,5 @@
+"use strict";
+
 // DOVEDALE BOXER - CrazyRocketGuy 2026
 // UPDATED 2.0.1h8
 

@@ -1,3 +1,5 @@
+"use strict";
+
 const WS_SERVER = "wss://map.dovedale.wiki/api/ws";
 
 const WORLD_BOUNDS = {
@@ -111,6 +113,7 @@ const elements = {
 	serverSelect: document.getElementById("servers"),
 	connectionPopup: document.getElementById("connectionPopup"),
 	reconnectBtn: document.getElementById("reconnectBtn"),
+	joinBtn: document.getElementById("joinBtn"),
 };
 
 // Application State
@@ -674,10 +677,18 @@ const updateServerList = (data = null) => {
 
 	if (selectedValue !== "all" && !currentServers.includes(selectedValue)) {
 		elements.serverSelect.value = "all";
+		elements.joinBtn.href = "roblox://experiences/start?placeId=12018816388";
 		state.currentServer = "all";
 	} else {
 		elements.serverSelect.value = selectedValue;
 	}
+};
+
+const TRAIN_PATH = {
+	body: new Path2D("M1 1 l10 0 l1 2 l-1 2 l-10 0 Z"),
+	hood: new Path2D("M8.5 1 l2 0 l1 2 l-1 2 l-2 0 l1,-2Z"),
+	window: new Path2D("M8.5 1 l 1,2 l -1,2"),
+	outline: new Path2D("M1 1 l10 0 l1 2 l-1 2 l-10 0 Z")
 };
 
 const drawScene = () => {
@@ -722,8 +733,7 @@ const drawScene = () => {
 
 				const overlap = Math.max(0.5, 2 / state.currentScale);
 				const drawWidth =
-					scaledChunkWidth +
-					(column < MAP_CONFIG.columns - 1 ? overlap : 0);
+					scaledChunkWidth + (column < MAP_CONFIG.columns - 1 ? overlap : 0);
 				const drawHeight =
 					scaledChunkHeight + (row < MAP_CONFIG.rows - 1 ? overlap : 0);
 
@@ -748,7 +758,10 @@ const drawScene = () => {
 
 	const dotScaleFactor = Math.max(0.3, 1 / Math.pow(state.currentScale, 0.4));
 
+	let activePlayerIds = [];
 	playersToShow.forEach((player) => {
+		activePlayerIds.push(String(player.userId));
+
 		const worldX = player.position?.x ?? 0;
 		const worldY = player.position?.y ?? 0;
 		const name = player.username ?? "Unknown";
@@ -784,17 +797,17 @@ const drawScene = () => {
 			context.scale(trainScale, trainScale);
 			context.translate(-trainMarkerDim.x / 2, -trainMarkerDim.y / 2);
 			context.fillStyle = getPlayerColor(name);
-			context.fill(new Path2D("M1 1 l10 0 l1 2 l-1 2 l-10 0 Z")); // BODY
+			context.fill(TRAIN_PATH.body); // BODY
 			context.fillStyle = "#00000020";
-			context.fill(new Path2D("M8.5 1 l2 0 l1 2 l-1 2 l-2 0 l1,-2Z")); // HOOD
+			context.fill(TRAIN_PATH.hood); // HOOD
 			context.strokeStyle = "#000080";
 			context.lineWidth = 1;
-			context.stroke(new Path2D("M8.5 1 l 1,2 l -1,2")); // WINDOW
+			context.stroke(TRAIN_PATH.window); // WINDOW
 			context.strokeStyle = isHovered ? "white" : "black";;
 			context.lineWidth = 1;
-			context.stroke(new Path2D("M1 1 l10 0 l1 2 l-1 2 l-10 0 Z")); // OUTLINE
+			context.stroke(TRAIN_PATH.outline); // OUTLINE
 			context.translate(trainMarkerDim.x / 2, trainMarkerDim.y / 2);
-			context.scale(1/trainScale, 1/trainScale);
+			context.scale(1 / trainScale, 1 / trainScale);
 			context.rotate(-markerAngle);
 			context.translate(-canvasPosition.x, -canvasPosition.y);
 
@@ -809,6 +822,12 @@ const drawScene = () => {
 		context.strokeStyle = isHovered ? "white" : "black";
 		context.lineWidth = Math.max((isHovered ? 0.7 : 0.4) * scaleFactor, 0.25);
 		context.stroke();
+		}
+	});
+
+	Object.keys(state.previousPlayerPosition).forEach((previousPlayerId) => {
+		if (!activePlayerIds.includes(previousPlayerId)) {
+			delete state.previousPlayerPosition[previousPlayerId];
 		}
 	});
 
@@ -1022,6 +1041,14 @@ const handleTouchEvents = () => {
 elements.serverSelect.addEventListener("change", () => {
 	state.currentServer = elements.serverSelect.value;
 	drawScene();
+
+		if (elements.serverSelect.value === "all") {
+		elements.joinBtn.href = "roblox://experiences/start?placeId=12018816388";
+	} else {
+		elements.joinBtn.href =
+			"roblox://experiences/start?placeId=12018816388&gameInstanceId=" +
+			elements.serverSelect.value;
+	}
 });
 
 elements.reconnectBtn.addEventListener("click", () => {
