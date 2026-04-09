@@ -3,6 +3,8 @@
 // DOVEDALE BOXER - CrazyRocketGuy 2026
 // UPDATED 2.0.1h8
 
+// beep.mp3: https://freesound.org/people/LilMati/sounds/657948/
+
 const WS_SERVER = "wss://map.dovedale.wiki/api/ws";
 
 const SIGNAL_BOXES = {
@@ -98,6 +100,8 @@ const elements = {
 	map: document.getElementById("map"),
 	connectionStatus: document.getElementById("connectionStatus"),
 	serverStats: document.getElementById("serverStats"),
+	soundFX: document.getElementById("soundFX"),
+	soundFXToggle: document.getElementById("soundToggle"),
 };
 
 class AppState {
@@ -348,6 +352,7 @@ const getBoxPlayers = () => {
 						delete state.boxPlayers[box][player.userId];
 						if (Object.keys(state.boxPlayers[box]).length === 0) {
 							delete state.boxPlayers[box]; // and clear out box once it's empty
+							if(elements.soundFXToggle.checked) elements.soundFX.play();
 						}
 					}
 				}
